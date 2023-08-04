@@ -106,5 +106,8 @@ ThisBuild / githubWorkflowPublish := Seq(
   )
 )
 
+// To avoid publishing the default root package / `bijection-scala`
+publish / skip := true
 resolvers := Nil
 publishTo := None
+
