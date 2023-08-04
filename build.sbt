@@ -1,3 +1,4 @@
+import sbt.Keys.{credentials, publishTo, resolvers}
 // Globals
 
 ThisBuild / organization := "dev.librecybernetics"
@@ -30,6 +31,15 @@ val sharedSettings = Seq(
     "-language:implicitConversions",
     "-Ykind-projector:underscores",
     "-Xfatal-warnings"
+  ),
+  resolvers    := Seq(
+    "GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala"
+  ),
+  publishTo    := Some(
+    "GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala"
+  ),
+  credentials  := Seq(
+    Credentials("GitHub Package Registry", "maven.pkg.github.com", "LibreCybernetics", sys.env("GITHUB_TOKEN"))
   )
 )
 
@@ -54,7 +64,7 @@ val core =
 ThisBuild / githubWorkflowJavaVersions := Seq(
   JavaSpec.temurin("11"),
   JavaSpec.temurin("17"),
-  JavaSpec.temurin("20"),
+  JavaSpec.temurin("20")
 )
 
 ThisBuild / githubWorkflowTargetTags            :=
@@ -68,11 +78,23 @@ ThisBuild / githubWorkflowPublishTargetBranches :=
 ThisBuild / githubWorkflowPublish := Seq(
   WorkflowStep.Sbt(
     commands = List("ci-release"),
-    name = Some("Publish project")
+    name = Some("Publish project"),
+    env = Map(
+      "CI_CLEAN"            -> "; clean",
+      "CI_SONATYPE_RELEASE" -> "version", // Not configure, skip
+      "GITHUB_TOKEN"        -> "${{ secrets.GITHUB_TOKEN }}",
+      "PGP_PASSPHRASE"      -> "${{ secrets.PGP_PASSPHRASE }}",
+      "PGP_SECRET"          -> "${{ secrets.PGP_SECRET }}"
+    )
   )
 )
 
-ThisBuild / publishTo := Some("GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala")
-ThisBuild / credentials := Seq(
+resolvers   := Seq(
+  "GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala"
+)
+publishTo   := Some(
+  "GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala"
+)
+credentials := Seq(
   Credentials("GitHub Package Registry", "maven.pkg.github.com", "LibreCybernetics", sys.env("GITHUB_TOKEN"))
 )
