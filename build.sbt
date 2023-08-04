@@ -1,4 +1,3 @@
-import sbt.Keys.{credentials, publishTo, resolvers}
 // Globals
 
 ThisBuild / organization := "dev.librecybernetics"
@@ -15,7 +14,7 @@ ThisBuild / scmInfo := Some(
   )
 )
 
-ThisBuild / versionScheme := Some("early-semver")
+ThisBuild / versionScheme := Some("strict")
 ThisBuild / scalaVersion  := Version.scala
 
 val sharedSettings = Seq(
@@ -33,13 +32,19 @@ val sharedSettings = Seq(
     "-Xfatal-warnings"
   ),
   resolvers    := Seq(
+    Resolver.mavenLocal,
     "GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala"
   ),
   publishTo    := Some(
     "GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala"
   ),
   credentials  := Seq(
-    Credentials("GitHub Package Registry", "maven.pkg.github.com", "LibreCybernetics", sys.env("GITHUB_TOKEN"))
+    Credentials(
+      "GitHub Package Registry",
+      "maven.pkg.github.com",
+      "LibreCybernetics",
+      sys.env.getOrElse("GITHUB_TOKEN", "")
+    )
   )
 )
 
@@ -57,6 +62,18 @@ val core =
         "org.scalatest"     %%% "scalatest-wordspec" % Version.scalatest          % Test,
         "org.scalatestplus" %%% "scalacheck-1-17"    % Version.scalatestPlusCheck % Test
       )
+    )
+
+val root =
+  crossProject(JVMPlatform, NativePlatform, JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("."))
+    .aggregate(core)
+    .enablePlugins(ScalaUnidocPlugin)
+    .settings(sharedSettings)
+    .settings(
+      name                                       := "bijection",
+      ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(thisProject.value.aggregate*)
     )
 
 // CI/CD
@@ -87,14 +104,4 @@ ThisBuild / githubWorkflowPublish := Seq(
       "PGP_SECRET"          -> "${{ secrets.PGP_SECRET }}"
     )
   )
-)
-
-resolvers   := Seq(
-  "GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala"
-)
-publishTo   := Some(
-  "GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala"
-)
-credentials := Seq(
-  Credentials("GitHub Package Registry", "maven.pkg.github.com", "LibreCybernetics", sys.env("GITHUB_TOKEN"))
 )
