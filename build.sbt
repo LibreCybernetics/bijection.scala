@@ -14,8 +14,8 @@ ThisBuild / scmInfo := Some(
   )
 )
 
-ThisBuild / versionScheme     := Some("semver-spec")
-ThisBuild / scalaVersion      := Version.scala
+ThisBuild / versionScheme := Some("early-semver")
+ThisBuild / scalaVersion  := Version.scala
 
 val sharedSettings = Seq(
   scalaVersion := Version.scala,
@@ -49,3 +49,30 @@ val core =
       )
     )
 
+// CI/CD
+
+ThisBuild / githubWorkflowJavaVersions := Seq(
+  JavaSpec.temurin("11"),
+  JavaSpec.temurin("17"),
+  JavaSpec.temurin("20"),
+)
+
+ThisBuild / githubWorkflowTargetTags            :=
+  Seq("v*")
+ThisBuild / githubWorkflowPublishTargetBranches :=
+  Seq(
+    RefPredicate.StartsWith(Ref.Tag("v")),
+    RefPredicate.Equals(Ref.Branch("main"))
+  )
+
+ThisBuild / githubWorkflowPublish := Seq(
+  WorkflowStep.Sbt(
+    commands = List("ci-release"),
+    name = Some("Publish project")
+  )
+)
+
+ThisBuild / publishTo := Some("GitHub Package Registry" at "https://maven.pkg.github.com/LibreCybernetics/bijection.scala")
+ThisBuild / credentials := Seq(
+  Credentials("GitHub Package Registry", "maven.pkg.github.com", "LibreCybernetics", sys.env("GITHUB_TOKEN"))
+)
