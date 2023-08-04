@@ -105,3 +105,6 @@ ThisBuild / githubWorkflowPublish := Seq(
     )
   )
 )
+
+resolvers := Nil
+publishTo := None
