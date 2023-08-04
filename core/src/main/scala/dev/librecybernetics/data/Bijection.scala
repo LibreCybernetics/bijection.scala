@@ -7,24 +7,26 @@ import scala.util.NotGiven
 // NOTE: This mimics a middle point between Scala and Cats
 
 object Bijection:
-  def empty[A, B](using
-      NotGiven[A =:= B]
-  ): Bijection[A, B] =
-    Bijection[A, B](Map.empty, Map.empty)
+  def empty[A, B]: Bijection[A, B] =
+    empty[A, B](Map.empty, Map.empty)
 
   def empty[A, B](
       emptyf: Map[A, B],
       emptyr: Map[B, A]
-  )(using
-      NotGiven[A =:= B]
   ): Bijection[A, B] =
-    Bijection[A, B](emptyf, emptyr)
+    require(emptyf.isEmpty)
+    require(emptyr.isEmpty)
+    new Bijection[A, B](emptyf, emptyr)
+
+  def apply[A, B](
+      kvs: (A, B)*
+  ): Bijection[A, B] = empty[A, B] ++ kvs
 end Bijection
 
 case class Bijection[A, B] private (
     forwardMap: Map[A, B],
     reverseMap: Map[B, A]
-)(using NotGiven[A =:= B]):
+):
   // Consistency check
 
   require(forwardMap.keys.forall { key => reverseMap(forwardMap(key)) == key })

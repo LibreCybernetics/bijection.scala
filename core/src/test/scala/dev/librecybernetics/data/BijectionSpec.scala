@@ -5,10 +5,9 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class BijectionSpec extends AnyWordSpec:
   "Bijection" when {
-    "Growable" in {
+    "Simple Example" in {
       val bijection: Bijection[Char, Int] =
-        Bijection.empty[Char, Int](Map.empty, Map.empty) ++
-          (Bijection.empty[Char, Int] ++ Set('a' -> 1, 'b' -> 2, 'c' -> 3))
+        Bijection('a' -> 1, 'b' -> 2, 'c' -> 3)
 
       assert(bijection.contains('a'))
       assert(bijection.contains('b'))
