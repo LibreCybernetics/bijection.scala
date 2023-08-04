@@ -1,0 +1,7 @@
+.bsp/
+.idea/
+.js/
+.jvm/
+.native/
+project/
+target/
