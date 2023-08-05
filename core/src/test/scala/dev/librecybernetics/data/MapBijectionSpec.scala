@@ -3,15 +3,15 @@ package dev.librecybernetics.data
 import org.scalatest.*
 import org.scalatest.wordspec.AnyWordSpec
 
-class BijectionSpec extends AnyWordSpec:
+class MapBijectionSpec extends AnyWordSpec:
   "Bijection" when {
     "Simple Example" in {
-      val bijection: Bijection[Char, Int] =
-        Bijection('a' -> 1, 'b' -> 2, 'c' -> 3)
+      val bijection: MapBijection[Char, Int] =
+        MapBijection('a' -> 1, 'b' -> 2, 'c' -> 3)
 
-      assert(bijection.contains('a'))
-      assert(bijection.contains('b'))
-      assert(bijection.contains('c'))
+      assert(bijection.isDefined('a'))
+      assert(bijection.isDefined('b'))
+      assert(bijection.isDefined('c'))
 
       assert(bijection('a') contains 1)
       assert(bijection('b') contains 2)
