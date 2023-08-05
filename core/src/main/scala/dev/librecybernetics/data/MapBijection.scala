@@ -23,7 +23,7 @@ object MapBijection:
   ): MapBijection[A, B] = empty[A, B] ++ kvs
 end MapBijection
 
-case class MapBijection[A, B] private(
+case class MapBijection[A, B] private[data](
     forwardMap: Map[A, B],
     reverseMap: Map[B, A]
 ):
@@ -79,8 +79,6 @@ case class MapBijection[A, B] private(
   @targetName("removeAll")
   infix def --(i: IterableOnce[A]): MapBijection[A, B] =
     i.iterator.foldLeft(this)(_ - _)
-
-  def flip: MapBijection[B, A] = MapBijection(reverseMap, forwardMap)
 end MapBijection
 
 given Bijection[MapBijection] with
@@ -98,6 +96,9 @@ given Bijection[MapBijection] with
 
     @throws[NoSuchElementException]
     def unsafeReverse(b: B): A = mb.reverseMap(b)
+
+    // Transform
+    def flip: MapBijection[B, A] = new MapBijection[B, A](mb.reverseMap, mb.forwardMap)
 
     // Combine
     def ++(other: MapBijection[A, B]): MapBijection[A, B] = mb ++ other.iterator

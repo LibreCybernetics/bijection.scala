@@ -20,6 +20,9 @@ given Bijection[FnBijection] with
     inline def unsafeApply(a: A): B = fb.forward(a)
     inline def unsafeReverse(b: B): A = fb.reverse(b)
 
+    // Transform
+    def flip: FnBijection[B, A] = FnBijection(fb.reverse, fb.forward)
+
     // Combine
     def ++(other: FnBijection[A, B]): FnBijection[A, B] = ???
   end extension

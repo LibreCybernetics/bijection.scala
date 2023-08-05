@@ -12,6 +12,9 @@ trait Bijection[F[_, _]]:
     def unsafeApply(a: A): B
     def unsafeReverse(b: B): A
 
+    // Transform
+    def flip: F[B, A]
+
     // Combine
     def ++(other: F[A, B]): F[A, B]
   end extension
