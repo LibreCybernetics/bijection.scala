@@ -27,6 +27,7 @@
             (sbt.override {
               jre = jdk;
             })
+            scalafmt
           ];
         };
 

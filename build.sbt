@@ -1,3 +1,5 @@
+import sbtcrossproject.CrossProject
+
 // Globals
 
 ThisBuild / organization := "dev.librecybernetics"
@@ -50,7 +52,7 @@ val sharedSettings = Seq(
 
 ThisBuild / wartremoverErrors ++= Warts.unsafe
 
-val core =
+val core: CrossProject =
   crossProject(JVMPlatform, NativePlatform, JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("core"))
@@ -66,7 +68,7 @@ val core =
       )
     )
 
-val root =
+val root: CrossProject =
   crossProject(JVMPlatform, NativePlatform, JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("."))

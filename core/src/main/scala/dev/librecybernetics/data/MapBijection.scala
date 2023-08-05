@@ -7,45 +7,6 @@ import alleycats.std.iterable.*
 import cats.syntax.monadError.*
 import cats.{MonadError, Traverse}
 
-// NOTE: This mimics a middle point between Scala and Cats
-
-object MapBijection:
-  def empty[A, B]: MapBijection[A, B] =
-    new MapBijection[A, B](Map.empty, Map.empty)
-
-  def apply[
-      A,
-      B,
-      F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
-  ](
-      kvs: (A, B)*
-  ): F[MapBijection[A, B]] = empty[A, B] ++ kvs
-
-  given Bijection[MapBijection] with
-    extension [A, B](mb: MapBijection[A, B])
-
-      // Properties
-      override def isDefined(a: A): Boolean = mb.forwardMap.contains(a)
-
-      // Access
-      def apply(a: A): Option[B]   = mb.forwardMap.get(a)
-      def reverse(b: B): Option[A] = mb.reverseMap.get(b)
-
-      // Transform
-      def flip: MapBijection[B, A] = new MapBijection[B, A](mb.reverseMap, mb.forwardMap)
-
-      // Combine
-      def ++[
-          F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
-      ](
-          other: MapBijection[A, B]
-      ): F[MapBijection[A, B]] =
-        mb ++ other.iterable
-      end ++
-    end extension
-  end given
-end MapBijection
-
 case class MapBijection[A, B] private[data] (
     forwardMap: Map[A, B],
     reverseMap: Map[B, A]
@@ -111,4 +72,41 @@ case class MapBijection[A, B] private[data] (
   @targetName("removeAll")
   infix def --(i: IterableOnce[A]): MapBijection[A, B] =
     i.iterator.foldLeft(this)(_ - _)
+end MapBijection
+
+object MapBijection:
+  def empty[A, B]: MapBijection[A, B] =
+    new MapBijection[A, B](Map.empty, Map.empty)
+
+  def apply[
+      A,
+      B,
+      F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
+  ](
+      kvs: (A, B)*
+  ): F[MapBijection[A, B]] = empty[A, B] ++ kvs
+
+  given Bijection[MapBijection] with
+    extension [A, B](mb: MapBijection[A, B])
+
+      // Properties
+      override def isDefined(a: A): Boolean = mb.forwardMap.contains(a)
+
+      // Access
+      def apply(a: A): Option[B]   = mb.forwardMap.get(a)
+      def reverse(b: B): Option[A] = mb.reverseMap.get(b)
+
+      // Transform
+      def flip: MapBijection[B, A] = new MapBijection[B, A](mb.reverseMap, mb.forwardMap)
+
+      // Combine
+      def ++[
+          F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
+      ](
+          other: MapBijection[A, B]
+      ): F[MapBijection[A, B]] =
+        mb ++ other.iterable
+      end ++
+    end extension
+  end given
 end MapBijection
