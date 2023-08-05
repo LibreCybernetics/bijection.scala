@@ -31,12 +31,6 @@ object MapBijection:
       def apply(a: A): Option[B]   = mb.forwardMap.get(a)
       def reverse(b: B): Option[A] = mb.reverseMap.get(b)
 
-      @throws[NoSuchElementException]
-      def unsafeApply(a: A): B = mb.forwardMap(a)
-
-      @throws[NoSuchElementException]
-      def unsafeReverse(b: B): A = mb.reverseMap(b)
-
       // Transform
       def flip: MapBijection[B, A] = new MapBijection[B, A](mb.reverseMap, mb.forwardMap)
 
@@ -90,11 +84,11 @@ case class MapBijection[A, B] private[data] (
     val me     = MonadError[F, Bijection.Error]
     this.apply(a) -> this.reverse(b) match
       case (Some(bi), None) if b != bi                =>
-        me.raiseError(Bijection.Error.Rebinding(a -> bi, a -> b))
+        me.raiseError(Bijection.Error.Rebinding[A, B](a -> b, a -> bi))
       case (None, Some(ai)) if a != ai                =>
-        me.raiseError(Bijection.Error.Rebinding(b -> ai, b -> a))
+        me.raiseError(Bijection.Error.Rebinding[A, B](a -> b, ai -> b))
       case (Some(bi), Some(ai)) if a != ai && b != bi =>
-        me.raiseError(Bijection.Error.Rebinding(a -> bi, a -> b, b -> ai, b -> a))
+        me.raiseError(Bijection.Error.Rebinding[A, B](a -> b, ai -> b, a -> bi))
       case (_, _)                                     =>
         me.pure(new MapBijection[A, B](forwardMap + ab, reverseMap + ab.swap))
     end match

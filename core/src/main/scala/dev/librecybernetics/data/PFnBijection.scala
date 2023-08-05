@@ -16,9 +16,6 @@ given Bijection[PFnBijection] with
     def apply(a: A): Option[B]   = pb.forward.unapply(a)
     def reverse(b: B): Option[A] = pb.reverse.unapply(b)
 
-    def unsafeApply(a: A): B   = pb.forward(a)
-    def unsafeReverse(b: B): A = pb.reverse(b)
-
     // Transform
     def flip: PFnBijection[B, A] = PFnBijection(pb.reverse, pb.forward)
 

@@ -4,7 +4,7 @@ import cats.{MonadError, Traverse}
 
 object Bijection:
   enum Error:
-    case Rebinding[A, B](current: (A, B), `new`: (A, B)*)
+    case Rebinding[A, B](rebinding: (A, B), current: (A, B)*)
   end Error
 
   def apply[
@@ -25,9 +25,6 @@ trait Bijection[F[_, _]]:
     // Access
     def apply(a: A): Option[B]
     def reverse(b: B): Option[A]
-
-    def unsafeApply(a: A): B
-    def unsafeReverse(b: B): A
 
     // Transform
     def flip: F[B, A]
