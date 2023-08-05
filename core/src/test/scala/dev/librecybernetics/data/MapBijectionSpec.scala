@@ -6,8 +6,10 @@ import org.scalatest.wordspec.AnyWordSpec
 class MapBijectionSpec extends AnyWordSpec:
   "Bijection" when {
     "Simple Example" in {
-      val bijection: MapBijection[Char, Int] =
+      val bijectionE: Either[Bijection.Error, MapBijection[Char, Int]] =
         MapBijection('a' -> 1, 'b' -> 2, 'c' -> 3)
+
+      val Right(bijection) = bijectionE : @unchecked
 
       assert(bijection.isDefined('a'))
       assert(bijection.isDefined('b'))

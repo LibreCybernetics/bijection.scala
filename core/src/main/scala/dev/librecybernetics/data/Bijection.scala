@@ -1,5 +1,22 @@
 package dev.librecybernetics.data
 
+import cats.{MonadError, Traverse}
+
+object Bijection:
+  enum Error:
+    case Rebinding[A, B](current: (A, B), `new`: (A, B)*)
+  end Error
+
+  def apply[
+      A,
+      B,
+      F[_]: [F[_]] =>> MonadError[F, Bijection.Error],
+      T[_]: Traverse
+  ](
+      kvs: (A, B)*
+  ): F[MapBijection[A, B]] = MapBijection(kvs*)
+end Bijection
+
 trait Bijection[F[_, _]]:
   extension [A, B](c: F[A, B])
     // Properties
@@ -16,6 +33,8 @@ trait Bijection[F[_, _]]:
     def flip: F[B, A]
 
     // Combine
-    def ++(other: F[A, B]): F[A, B]
+    def ++[
+        M[_]: [M[_]] =>> MonadError[M, Bijection.Error]
+    ](other: F[A, B]): M[F[A, B]]
   end extension
 end Bijection

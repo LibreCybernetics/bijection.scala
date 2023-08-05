@@ -48,7 +48,7 @@ val sharedSettings = Seq(
   )
 )
 
-wartremoverErrors ++= Warts.unsafe
+ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 val core =
   crossProject(JVMPlatform, NativePlatform, JSPlatform)
@@ -58,6 +58,8 @@ val core =
     .settings(
       name := "bijection-core",
       libraryDependencies ++= Seq(
+        "org.typelevel"     %%% "alleycats-core"     % Version.cats,
+        "org.typelevel"     %%% "cats-core"          % Version.cats,
         "org.scalatest"     %%% "scalatest"          % Version.scalatest          % Test,
         "org.scalatest"     %%% "scalatest-wordspec" % Version.scalatest          % Test,
         "org.scalatestplus" %%% "scalacheck-1-17"    % Version.scalatestPlusCheck % Test
@@ -108,6 +110,5 @@ ThisBuild / githubWorkflowPublish := Seq(
 
 // To avoid publishing the default root package / `bijection-scala`
 publish / skip := true
-resolvers := Nil
-publishTo := None
-
+resolvers      := Nil
+publishTo      := None

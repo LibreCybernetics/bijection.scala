@@ -2,38 +2,61 @@ package dev.librecybernetics.data
 
 import scala.annotation.{nowarn, targetName}
 import scala.collection.immutable.{Map, Set}
-import scala.util.NotGiven
+
+import alleycats.std.iterable.*
+import cats.syntax.monadError.*
+import cats.{MonadError, Traverse}
 
 // NOTE: This mimics a middle point between Scala and Cats
 
 object MapBijection:
   def empty[A, B]: MapBijection[A, B] =
-    empty[A, B](Map.empty, Map.empty)
+    new MapBijection[A, B](Map.empty, Map.empty)
 
-  def empty[A, B](
-      emptyf: Map[A, B],
-      emptyr: Map[B, A]
-  ): MapBijection[A, B] =
-    require(emptyf.isEmpty)
-    require(emptyr.isEmpty)
-    new MapBijection[A, B](emptyf, emptyr)
-
-  def apply[A, B](
+  def apply[
+      A,
+      B,
+      F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
+  ](
       kvs: (A, B)*
-  ): MapBijection[A, B] = empty[A, B] ++ kvs
+  ): F[MapBijection[A, B]] = empty[A, B] ++ kvs
+
+  given Bijection[MapBijection] with
+    extension [A, B](mb: MapBijection[A, B])
+
+      // Properties
+      override def isDefined(a: A): Boolean = mb.forwardMap.contains(a)
+
+      // Access
+      def apply(a: A): Option[B]   = mb.forwardMap.get(a)
+      def reverse(b: B): Option[A] = mb.reverseMap.get(b)
+
+      @throws[NoSuchElementException]
+      def unsafeApply(a: A): B = mb.forwardMap(a)
+
+      @throws[NoSuchElementException]
+      def unsafeReverse(b: B): A = mb.reverseMap(b)
+
+      // Transform
+      def flip: MapBijection[B, A] = new MapBijection[B, A](mb.reverseMap, mb.forwardMap)
+
+      // Combine
+      def ++[
+          F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
+      ](
+          other: MapBijection[A, B]
+      ): F[MapBijection[A, B]] =
+        mb ++ other.iterable
+      end ++
+    end extension
+  end given
 end MapBijection
 
-case class MapBijection[A, B] private[data](
+case class MapBijection[A, B] private[data] (
     forwardMap: Map[A, B],
     reverseMap: Map[B, A]
 ):
-  // Consistency check
-
-  require(forwardMap.keys.forall { key => reverseMap(forwardMap(key)) == key })
-  require(reverseMap.keys.forall { key => forwardMap(reverseMap(key)) == key })
-
   // Properties
-
   def isEmpty: Boolean =
     assert(forwardMap.isEmpty == reverseMap.isEmpty)
     forwardMap.isEmpty
@@ -46,7 +69,7 @@ case class MapBijection[A, B] private[data](
 
   // Access
 
-  def iterator: Iterator[(A, B)] = forwardMap.iterator
+  def iterable: Iterable[(A, B)] = forwardMap.iterator.to(Iterable)
 
   def keySet: Set[A] = forwardMap.keySet
 
@@ -57,18 +80,33 @@ case class MapBijection[A, B] private[data](
 
   // Modifiers
 
-  def updated(a: A, b: B): MapBijection[A, B] =
-    MapBijection(forwardMap.updated(a, b), reverseMap.updated(b, a))
-
   @targetName("append")
-  infix def +(kv: (A, B)): MapBijection[A, B] = updated(kv._1, kv._2)
+  infix def +[
+      F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
+  ](
+      ab: (A, B)
+  ): F[MapBijection[A, B]] =
+    val (a, b) = ab
+    val me     = MonadError[F, Bijection.Error]
+    this.apply(a) -> this.reverse(b) match
+      case (Some(bi), None) if b != bi                =>
+        me.raiseError(Bijection.Error.Rebinding(a -> bi, a -> b))
+      case (None, Some(ai)) if a != ai                =>
+        me.raiseError(Bijection.Error.Rebinding(b -> ai, b -> a))
+      case (Some(bi), Some(ai)) if a != ai && b != bi =>
+        me.raiseError(Bijection.Error.Rebinding(a -> bi, a -> b, b -> ai, b -> a))
+      case (_, _)                                     =>
+        me.pure(new MapBijection[A, B](forwardMap + ab, reverseMap + ab.swap))
+    end match
 
   @targetName("appendAll")
-  infix def ++(i: IterableOnce[(A, B)]): MapBijection[A, B] =
-    i.iterator.foldLeft(this)(_ + _)
-
-  infix def ++(o: MapBijection[A, B]): MapBijection[A, B] =
-    this ++ o.iterator
+  infix def ++[
+      F[_]: [F[_]] =>> MonadError[F, Bijection.Error],
+      T[_]: Traverse
+  ](
+      iterable: T[(A, B)]
+  ): F[MapBijection[A, B]] =
+    Traverse[T].foldM(iterable, this)(_ + _)
 
   def remove(a: A): MapBijection[A, B] = this(a) match
     case None    => this
@@ -80,27 +118,3 @@ case class MapBijection[A, B] private[data](
   infix def --(i: IterableOnce[A]): MapBijection[A, B] =
     i.iterator.foldLeft(this)(_ - _)
 end MapBijection
-
-given Bijection[MapBijection] with
-  extension [A, B](mb: MapBijection[A, B])
-
-    // Properties
-    override def isDefined(a: A): Boolean = mb.forwardMap.contains(a)
-
-    // Access
-    def apply(a: A): Option[B] = mb.forwardMap.get(a)
-    def reverse(b: B): Option[A] = mb.reverseMap.get(b)
-
-    @throws[NoSuchElementException]
-    def unsafeApply(a: A): B = mb.forwardMap(a)
-
-    @throws[NoSuchElementException]
-    def unsafeReverse(b: B): A = mb.reverseMap(b)
-
-    // Transform
-    def flip: MapBijection[B, A] = new MapBijection[B, A](mb.reverseMap, mb.forwardMap)
-
-    // Combine
-    def ++(other: MapBijection[A, B]): MapBijection[A, B] = mb ++ other.iterator
-  end extension
-end given

@@ -1,8 +1,11 @@
 object Version {
   // Scala
-  lazy val scala = "3.3.0"
+  val scala = "3.3.0"
+
+  // Typelevel
+  val cats = "2.9.0"
 
   // Test
-  lazy val scalatest          = "3.2.16"
-  lazy val scalatestPlusCheck = scalatest + ".0"
+  val scalatest          = "3.2.16"
+  val scalatestPlusCheck = scalatest + ".0"
 }
