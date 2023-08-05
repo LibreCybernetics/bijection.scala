@@ -71,6 +71,7 @@ val root =
     .crossType(CrossType.Pure)
     .in(file("."))
     .aggregate(core)
+    .dependsOn(core)
     .enablePlugins(ScalaUnidocPlugin)
     .settings(sharedSettings)
     .settings(
