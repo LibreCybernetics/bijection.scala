@@ -3,7 +3,7 @@ object Version {
   val scala = "3.3.0"
 
   // Typelevel
-  val cats = "2.9.0"
+  val cats = "2.10.0"
 
   // Test
   val scalatest          = "3.2.16"
