@@ -31,8 +31,11 @@ val sharedSettings = Seq(
     "-feature",
     "-unchecked",
     // Extra flags
+    "-language:captureChecking",
     "-language:implicitConversions",
+    "-language:saferExceptions",
     "-Ykind-projector:underscores",
+    "-Ysafe-init",
     "-Xfatal-warnings"
   ),
   resolvers    := Seq(
