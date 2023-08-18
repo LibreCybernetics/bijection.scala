@@ -1,3 +1,5 @@
+import sbt.Keys.publishTo
+import sbt.Project.projectToRef
 import sbtcrossproject.CrossProject
 
 // Globals
@@ -81,6 +83,14 @@ val root: CrossProject =
       ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(thisProject.value.aggregate*)
     )
 
+// To avoid publishing the default root package / `bijection-scala`
+
+val fakeRoot = (project in file("."))
+  .settings(
+    publish / skip    := true,
+    sourceDirectory   := file("fake")
+  ).aggregate(root.componentProjects.map(projectToRef)*)
+
 // CI/CD
 
 ThisBuild / githubWorkflowJavaVersions := Seq(
@@ -110,8 +120,3 @@ ThisBuild / githubWorkflowPublish := Seq(
     )
   )
 )
-
-// To avoid publishing the default root package / `bijection-scala`
-publish / skip := true
-resolvers      := Nil
-publishTo      := None
