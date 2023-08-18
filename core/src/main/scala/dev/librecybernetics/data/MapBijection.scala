@@ -10,8 +10,11 @@ import cats.{MonadError, Traverse}
 case class MapBijection[A, B] private[data] (
     forwardMap: Map[A, B],
     reverseMap: Map[B, A]
-):
+) extends Bijection[MapBijection, A, B]:
+
   // Properties
+  override def isDefined(a: A): Boolean = forwardMap.contains(a)
+
   def isEmpty: Boolean =
     assert(forwardMap.isEmpty == reverseMap.isEmpty)
     forwardMap.isEmpty
@@ -22,16 +25,20 @@ case class MapBijection[A, B] private[data] (
     forwardMap.nonEmpty
   end nonEmpty
 
-  // Access
-
-  def iterable: Iterable[(A, B)] = forwardMap.iterator.to(Iterable)
-
-  def keySet: Set[A] = forwardMap.keySet
-
   def size: Int =
     assert(forwardMap.size == reverseMap.size)
     forwardMap.size
   end size
+
+  // Access
+  override def apply(a: A): Option[B]   = forwardMap.get(a)
+  override def reverse(b: B): Option[A] = reverseMap.get(b)
+
+  def iterable: Iterable[(A, B)] = forwardMap.iterator.to(Iterable)
+  def keySet: Set[A]             = forwardMap.keySet
+
+  // Transform
+  override def flip: MapBijection[B, A] = new MapBijection[B, A](reverseMap, forwardMap)
 
   // Modifiers
 
@@ -63,11 +70,15 @@ case class MapBijection[A, B] private[data] (
   ): F[MapBijection[A, B]] =
     Traverse[T].foldM(iterable, this)(_ + _)
 
-  def remove(a: A): MapBijection[A, B] = this(a) match
+  override def ++[F[_]: [F[_]] =>> MonadError[F, Bijection.Error]](other: MapBijection[A, B]): F[MapBijection[A, B]] =
+    this ++ other.iterable
+  end ++
+
+  @targetName("remove")
+  def -(a: A): MapBijection[A, B] = this(a) match
     case None    => this
     case Some(b) => MapBijection(forwardMap - a, reverseMap - b)
-
-  infix def -(a: A): MapBijection[A, B] = remove(a)
+  end -
 
   @targetName("removeAll")
   infix def --(i: IterableOnce[A]): MapBijection[A, B] =
@@ -78,35 +89,7 @@ object MapBijection:
   def empty[A, B]: MapBijection[A, B] =
     new MapBijection[A, B](Map.empty, Map.empty)
 
-  def apply[
-      A,
-      B,
-      F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
-  ](
+  def apply[A, B, F[_]: [F[_]] =>> MonadError[F, Bijection.Error]](
       kvs: (A, B)*
   ): F[MapBijection[A, B]] = empty[A, B] ++ kvs
-
-  given Bijection[MapBijection] with
-    extension [A, B](mb: MapBijection[A, B])
-
-      // Properties
-      override def isDefined(a: A): Boolean = mb.forwardMap.contains(a)
-
-      // Access
-      def apply(a: A): Option[B]   = mb.forwardMap.get(a)
-      def reverse(b: B): Option[A] = mb.reverseMap.get(b)
-
-      // Transform
-      def flip: MapBijection[B, A] = new MapBijection[B, A](mb.reverseMap, mb.forwardMap)
-
-      // Combine
-      def ++[
-          F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
-      ](
-          other: MapBijection[A, B]
-      ): F[MapBijection[A, B]] =
-        mb ++ other.iterable
-      end ++
-    end extension
-  end given
 end MapBijection

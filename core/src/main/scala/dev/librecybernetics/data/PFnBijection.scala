@@ -5,52 +5,46 @@ import cats.MonadError
 case class PFnBijection[A, B](
     forwardPFn: PartialFunction[A, B],
     reversePFn: PartialFunction[B, A]
-)
+) extends Bijection[PFnBijection, A, B]:
+  // Properties
+  override def isDefined(a: A): Boolean = forwardPFn.isDefinedAt(a)
 
-object PFnBijection:
-  given Bijection[PFnBijection] with
-    extension [A, B](pb: PFnBijection[A, B])
-      // Properties
-      def isDefined(a: A): Boolean = pb.forwardPFn.isDefinedAt(a)
+  // Access
+  override def apply(a: A): Option[B]   = forwardPFn.unapply(a)
+  override def reverse(b: B): Option[A] = reversePFn.unapply(b)
 
-      // Access
-      def apply(a: A): Option[B]   = pb.forwardPFn.unapply(a)
-      def reverse(b: B): Option[A] = pb.reversePFn.unapply(b)
+  // Transform
+  override def flip: PFnBijection[B, A] = PFnBijection(reversePFn, forwardPFn)
 
-      // Transform
-      def flip: PFnBijection[B, A] = PFnBijection(pb.reversePFn, pb.forwardPFn)
+  // Combine
+  override def ++[F[_]: [F[_]] =>> MonadError[F, Bijection.Error]](
+      other: PFnBijection[A, B]
+  ): F[PFnBijection[A, B]] = MonadError[F, Bijection.Error].pure {
+    PFnBijection[A, B](
+      forwardPFn = {
+        case a if apply(a).isDefined && other(a).isEmpty =>
+          forwardPFn(a)
+        case a if apply(a).isEmpty && other(a).isDefined =>
+          other.forwardPFn(a)
 
-      // Combine
-      def ++[F[_]: [F[_]] =>> MonadError[F, Bijection.Error]](
-          other: PFnBijection[A, B]
-      ): F[PFnBijection[A, B]] = MonadError[F, Bijection.Error].pure {
-        PFnBijection[A, B](
-          forwardPFn = {
-            case a if pb(a).isDefined && other(a).isEmpty =>
-              pb.forwardPFn(a)
-            case a if pb(a).isEmpty && other(a).isDefined =>
-              other.forwardPFn(a)
+        case a
+            if apply(a).isDefined &&
+              other(a).isDefined &&
+              apply(a) == other(a) =>
+          forwardPFn(a)
+      }: PartialFunction[A, B],
+      reversePFn = {
+        case b if reverse(b).isDefined && other.reverse(b).isEmpty =>
+          reversePFn(b)
+        case b if reverse(b).isEmpty && other.reverse(b).isDefined =>
+          other.reversePFn(b)
 
-            case a
-                if pb(a).isDefined &&
-                  other(a).isDefined &&
-                  pb(a) == other(a) =>
-              pb.forwardPFn(a)
-          }: PartialFunction[A, B],
-          reversePFn = {
-            case b if pb.reverse(b).isDefined && other.reverse(b).isEmpty =>
-              pb.reversePFn(b)
-            case b if pb.reverse(b).isEmpty && other.reverse(b).isDefined =>
-              other.reversePFn(b)
-
-            case b
-                if pb.reverse(b).isDefined &&
-                  other.reverse(b).isDefined &&
-                  pb.reverse(b) == other.reverse(b) =>
-              pb.reversePFn(b)
-          }: PartialFunction[B, A]
-        )
-      }
-    end extension
-  end given
+        case b
+            if reverse(b).isDefined &&
+              other.reverse(b).isDefined &&
+              reverse(b) == other.reverse(b) =>
+          reversePFn(b)
+      }: PartialFunction[B, A]
+    )
+  }
 end PFnBijection
