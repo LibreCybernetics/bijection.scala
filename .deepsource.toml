@@ -1,0 +1,9 @@
+version = 1
+
+test_patterns = ["**/src/test/**"]
+
+[[analyzers]]
+name = "shell"
+
+[[analyzers]]
+name = "scala"
