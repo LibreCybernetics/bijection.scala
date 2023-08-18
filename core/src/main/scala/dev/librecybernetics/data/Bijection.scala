@@ -37,21 +37,19 @@ object Bijection:
   ): PFnBijection[A, B] = PFnBijection(forward, reverse)
 end Bijection
 
-trait Bijection[F[_, _]]:
-  extension [A, B](c: F[A, B])
-    // Properties
-    def isDefined(a: A): Boolean
+trait Bijection[F[_, _], A, B]:
+  // Properties
+  def isDefined(a: A): Boolean
 
-    // Access
-    def apply(a: A): Option[B]
-    def reverse(b: B): Option[A]
+  // Access
+  def apply(a: A): Option[B]
+  def reverse(b: B): Option[A]
 
-    // Transform
-    def flip: F[B, A]
+  // Transform
+  def flip: F[B, A]
 
-    // Combine
-    def ++[
-        M[_]: [M[_]] =>> MonadError[M, Bijection.Error]
-    ](other: F[A, B]): M[F[A, B]]
-  end extension
+  // Combine
+  def ++[
+      M[_]: [M[_]] =>> MonadError[M, Bijection.Error]
+  ](other: F[A, B]): M[F[A, B]]
 end Bijection
