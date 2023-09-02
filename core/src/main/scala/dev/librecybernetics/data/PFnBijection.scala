@@ -5,46 +5,24 @@ import cats.MonadError
 case class PFnBijection[A, B](
     forwardPFn: PartialFunction[A, B],
     reversePFn: PartialFunction[B, A]
-) extends Bijection[PFnBijection, A, B]:
+) extends Bijection[PFnBijection, A, B] { self =>
   // Properties
   override def isDefined(a: A): Boolean = forwardPFn.isDefinedAt(a)
 
   // Access
-  override def apply(a: A): Option[B]   = forwardPFn.unapply(a)
-  override def reverse(b: B): Option[A] = reversePFn.unapply(b)
+  inline override def apply(a: A): Option[B] = forwardPFn.unapply(a)
+
+  inline override def reverse(b: B): Option[A] = reversePFn.unapply(b)
 
   // Transform
-  override def flip: PFnBijection[B, A] = PFnBijection(reversePFn, forwardPFn)
+  override lazy val flip: PFnBijection[B, A] = new PFnBijection(reversePFn, forwardPFn) {
+    override lazy val flip: PFnBijection[A, B] = self
+  }
 
   // Combine
-  override def ++[F[_]: [F[_]] =>> MonadError[F, Bijection.Error]](
-      other: PFnBijection[A, B]
-  ): F[PFnBijection[A, B]] = MonadError[F, Bijection.Error].pure {
+  override def ++(other: PFnBijection[A, B]): PFnBijection[A, B] =
     PFnBijection[A, B](
-      forwardPFn = {
-        case a if apply(a).isDefined && other(a).isEmpty =>
-          forwardPFn(a)
-        case a if apply(a).isEmpty && other(a).isDefined =>
-          other.forwardPFn(a)
-
-        case a
-            if apply(a).isDefined &&
-              other(a).isDefined &&
-              apply(a) == other(a) =>
-          forwardPFn(a)
-      }: PartialFunction[A, B],
-      reversePFn = {
-        case b if reverse(b).isDefined && other.reverse(b).isEmpty =>
-          reversePFn(b)
-        case b if reverse(b).isEmpty && other.reverse(b).isDefined =>
-          other.reversePFn(b)
-
-        case b
-            if reverse(b).isDefined &&
-              other.reverse(b).isDefined &&
-              reverse(b) == other.reverse(b) =>
-          reversePFn(b)
-      }: PartialFunction[B, A]
+      forwardPFn = other.forwardPFn.orElse(this.forwardPFn),
+      reversePFn = other.reversePFn.orElse(this.reversePFn)
     )
-  }
-end PFnBijection
+}
