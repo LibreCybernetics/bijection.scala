@@ -39,15 +39,15 @@ end Bijection
 
 trait Bijection[F[_, _], A, B]:
   // Properties
-  def isDefined(a: A): Boolean
+  inline def isDefined(a: A): Boolean
 
   // Access
-  def apply(a: A): Option[B]
-  def reverse(b: B): Option[A]
+  inline def apply(a: A): Option[B]
+  inline def reverse(b: B): Option[A]
 
   // Transform
-  def flip: F[B, A]
+  lazy val flip: F[B, A]
 
   // Combine
-  def ++(other: F[A, B]): F[A, B]
+  inline def ++(other: F[A, B]): F[A, B]
 end Bijection

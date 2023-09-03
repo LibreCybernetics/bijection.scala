@@ -27,7 +27,7 @@ class MapBijectionSpec extends AnyWordSpec:
       bijection.size shouldBe 3
 
       bijection.keySet.foreach { char =>
-        bijection(char).flatMap(bijection.reverse) should contain(char)
+        bijection(char).flatMap(bijection.reverse(_)) should contain(char)
       }
 
       (bijection -- Seq('a', 'b', 'c', 'd')).isEmpty shouldBe true
