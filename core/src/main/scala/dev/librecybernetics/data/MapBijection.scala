@@ -13,7 +13,7 @@ case class MapBijection[A, B] private[data] (
 ) extends Bijection[MapBijection, A, B] { self =>
 
   // Properties
-  override def isDefined(a: A): Boolean = forwardMap.contains(a)
+  override inline def isDefined(a: A): Boolean = forwardMap.contains(a)
 
   def isEmpty: Boolean =
     assert(forwardMap.isEmpty == reverseMap.isEmpty)
@@ -31,16 +31,19 @@ case class MapBijection[A, B] private[data] (
   end size
 
   // Access
-  override def apply(a: A): Option[B] = forwardMap.get(a)
+  override inline def apply(a: A): Option[B] = forwardMap.get(a)
 
-  override def reverse(b: B): Option[A] = reverseMap.get(b)
+  override inline def reverse(b: B): Option[A] = reverseMap.get(b)
 
   def iterable: Iterable[(A, B)] = forwardMap.iterator.to(Iterable)
 
   def keySet: Set[A] = forwardMap.keySet
 
   // Transform
-  override def flip: MapBijection[B, A] = new MapBijection[B, A](reverseMap, forwardMap)
+  override lazy val flip: MapBijection[B, A] =
+    new MapBijection[B, A](reverseMap, forwardMap) {
+      override lazy val flip: MapBijection[A, B] = self
+    }
 
   // Modifiers
 
@@ -72,7 +75,7 @@ case class MapBijection[A, B] private[data] (
   ): F[MapBijection[A, B]] =
     Traverse[T].foldM(iterable, this)(_ + _)
 
-  override def ++(other: MapBijection[A, B]): MapBijection[A, B] =
+  override inline def ++(other: MapBijection[A, B]): MapBijection[A, B] =
     MapBijection(
       forwardMap ++ other.forwardMap,
       reverseMap ++ other.reverseMap
