@@ -10,7 +10,7 @@ import cats.{MonadError, Traverse}
 case class MapBijection[A, B] private[data] (
     forwardMap: Map[A, B],
     reverseMap: Map[B, A]
-) extends Bijection[MapBijection, A, B]:
+) extends Bijection[MapBijection, A, B] { self =>
 
   // Properties
   override def isDefined(a: A): Boolean = forwardMap.contains(a)
@@ -31,11 +31,13 @@ case class MapBijection[A, B] private[data] (
   end size
 
   // Access
-  override def apply(a: A): Option[B]   = forwardMap.get(a)
+  override def apply(a: A): Option[B] = forwardMap.get(a)
+
   override def reverse(b: B): Option[A] = reverseMap.get(b)
 
   def iterable: Iterable[(A, B)] = forwardMap.iterator.to(Iterable)
-  def keySet: Set[A]             = forwardMap.keySet
+
+  def keySet: Set[A] = forwardMap.keySet
 
   // Transform
   override def flip: MapBijection[B, A] = new MapBijection[B, A](reverseMap, forwardMap)
@@ -70,8 +72,11 @@ case class MapBijection[A, B] private[data] (
   ): F[MapBijection[A, B]] =
     Traverse[T].foldM(iterable, this)(_ + _)
 
-  override def ++[F[_]: [F[_]] =>> MonadError[F, Bijection.Error]](other: MapBijection[A, B]): F[MapBijection[A, B]] =
-    this ++ other.iterable
+  override def ++(other: MapBijection[A, B]): MapBijection[A, B] =
+    MapBijection(
+      forwardMap ++ other.forwardMap,
+      reverseMap ++ other.reverseMap
+    )
   end ++
 
   @targetName("remove")
@@ -83,7 +88,7 @@ case class MapBijection[A, B] private[data] (
   @targetName("removeAll")
   infix def --(i: IterableOnce[A]): MapBijection[A, B] =
     i.iterator.foldLeft(this)(_ - _)
-end MapBijection
+}
 
 object MapBijection:
   def empty[A, B]: MapBijection[A, B] =

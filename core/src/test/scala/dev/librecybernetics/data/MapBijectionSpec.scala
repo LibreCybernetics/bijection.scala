@@ -35,8 +35,8 @@ class MapBijectionSpec extends AnyWordSpec:
 
       val Right(secondBijection): Either[Bijection.Error, MapBijection[Char, Int]] =
         MapBijection('d' -> 4, 'e' -> 5, 'f' -> 6): @unchecked
-      val Right(concat): Either[Bijection.Error, MapBijection[Char, Int]]          =
-        bijection ++ secondBijection: @unchecked
+
+      val concat: MapBijection[Char, Int] = bijection ++ secondBijection
       concat.size shouldBe 6
     }
 

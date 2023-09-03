@@ -49,7 +49,5 @@ trait Bijection[F[_, _], A, B]:
   def flip: F[B, A]
 
   // Combine
-  def ++[
-      M[_]: [M[_]] =>> MonadError[M, Bijection.Error]
-  ](other: F[A, B]): M[F[A, B]]
+  def ++(other: F[A, B]): F[A, B]
 end Bijection
