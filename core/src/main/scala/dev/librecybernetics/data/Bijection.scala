@@ -39,18 +39,22 @@ object Bijection:
   ): PFnBijection[A, B] = PFnBijection(forward, reverse)
 end Bijection
 
-trait Bijection[F[_, _], A, B]:
+trait Bijection[A, B]:
+  type Concat
+  type Flip
+  type Result[T]
+
   // Properties
   inline def isDefined(inline a: A): Boolean
 
   // Access
-  inline def apply(inline a: A): Option[B]
-  inline def reverse(inline b: B): Option[A]
+  inline def apply(inline a: A): Result[B]
+  inline def reverse(inline b: B): Result[A]
 
   // Transform
-  lazy val flip: F[B, A]
+  lazy val flip: Flip
 
   // Combine
   @targetName("concat")
-  def ++(other: F[A, B]): F[A, B]
+  def ++(other: Concat): Concat
 end Bijection

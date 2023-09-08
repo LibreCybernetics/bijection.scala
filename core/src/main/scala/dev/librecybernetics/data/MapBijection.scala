@@ -10,7 +10,10 @@ import cats.{MonadError, Traverse}
 sealed case class MapBijection[A, B] private[data] (
     forwardMap: Map[A, B],
     reverseMap: Map[B, A]
-) extends Bijection[MapBijection, A, B] { self =>
+) extends Bijection[A, B] { self =>
+  override type Concat = MapBijection[A, B]
+  override type Flip = MapBijection[B, A]
+  override type Result[T] = Option[T]
 
   // Properties
   override inline def isDefined(inline a: A): Boolean = forwardMap.contains(a)

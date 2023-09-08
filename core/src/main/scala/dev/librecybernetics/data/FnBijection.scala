@@ -8,14 +8,18 @@ import cats.MonadError
 sealed case class FnBijection[A, B](
     forwardFn: A => B,
     reverseFn: B => A
-) extends Bijection[FnBijection, A, B] { self =>
+) extends Bijection[A, B] { self =>
+  override type Concat = FnBijection[A, B]
+  override type Flip = FnBijection[B, A]
+  override type Result[T] = T
+
   // Properties
   override inline def isDefined(inline a: A): Boolean = Try(forwardFn(a)).isSuccess
 
   // Access
-  override inline def apply(inline a: A): Option[B] = Try(forwardFn(a)).toOption
+  override inline def apply(inline a: A): B = forwardFn(a)
 
-  override inline def reverse(inline b: B): Option[A] = Try(reverseFn(b)).toOption
+  override inline def reverse(inline b: B): A = reverseFn(b)
 
   // Transform
   override lazy val flip: FnBijection[B, A] = new FnBijection(self.reverseFn, self.forwardFn) {
@@ -27,7 +31,7 @@ sealed case class FnBijection[A, B](
   @targetName("concat")
   override def ++(other: FnBijection[A, B]): FnBijection[A, B] =
     FnBijection(
-      forwardFn = a => other.apply(a).orElse(this.apply(a)).get,
-      reverseFn = b => other.reverse(b).orElse(this.reverse(b)).get
+      forwardFn = a => Try(other(a)).getOrElse(this(a)),
+      reverseFn = b => Try(other.reverse(b)).getOrElse(this.reverse(b))
     )
 }
