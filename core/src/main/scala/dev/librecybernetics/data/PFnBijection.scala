@@ -7,7 +7,11 @@ import cats.MonadError
 sealed case class PFnBijection[A, B](
     forwardPFn: PartialFunction[A, B],
     reversePFn: PartialFunction[B, A]
-) extends Bijection[PFnBijection, A, B] { self =>
+) extends Bijection[A, B] { self =>
+  override type Concat = PFnBijection[A, B]
+  override type Flip = PFnBijection[B, A]
+  override type Result[T] = Option[T]
+
   // Properties
   override inline def isDefined(inline a: A): Boolean = forwardPFn.isDefinedAt(a)
 
