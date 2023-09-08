@@ -1,6 +1,6 @@
 object Version {
   // Scala
-  val scala = "3.3.0"
+  val scala = "3.3.1"
 
   // Typelevel
   val cats = "2.10.0"
