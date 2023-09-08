@@ -1,5 +1,7 @@
 package dev.librecybernetics.data
 
+import scala.annotation.targetName
+
 import cats.{MonadError, Traverse}
 
 object Bijection:
@@ -39,15 +41,16 @@ end Bijection
 
 trait Bijection[F[_, _], A, B]:
   // Properties
-  inline def isDefined(a: A): Boolean
+  inline def isDefined(inline a: A): Boolean
 
   // Access
-  inline def apply(a: A): Option[B]
-  inline def reverse(b: B): Option[A]
+  inline def apply(inline a: A): Option[B]
+  inline def reverse(inline b: B): Option[A]
 
   // Transform
   lazy val flip: F[B, A]
 
   // Combine
-  inline def ++(other: F[A, B]): F[A, B]
+  @targetName("concat")
+  def ++(other: F[A, B]): F[A, B]
 end Bijection

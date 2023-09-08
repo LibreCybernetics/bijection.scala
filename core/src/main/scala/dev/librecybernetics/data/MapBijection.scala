@@ -7,13 +7,13 @@ import alleycats.std.iterable.*
 import cats.syntax.monadError.*
 import cats.{MonadError, Traverse}
 
-case class MapBijection[A, B] private[data] (
+sealed case class MapBijection[A, B] private[data] (
     forwardMap: Map[A, B],
     reverseMap: Map[B, A]
 ) extends Bijection[MapBijection, A, B] { self =>
 
   // Properties
-  override inline def isDefined(a: A): Boolean = forwardMap.contains(a)
+  override inline def isDefined(inline a: A): Boolean = forwardMap.contains(a)
 
   def isEmpty: Boolean =
     assert(forwardMap.isEmpty == reverseMap.isEmpty)
@@ -31,9 +31,9 @@ case class MapBijection[A, B] private[data] (
   end size
 
   // Access
-  override inline def apply(a: A): Option[B] = forwardMap.get(a)
+  override inline def apply(inline a: A): Option[B] = forwardMap.get(a)
 
-  override inline def reverse(b: B): Option[A] = reverseMap.get(b)
+  override inline def reverse(inline b: B): Option[A] = reverseMap.get(b)
 
   def iterable: Iterable[(A, B)] = forwardMap.iterator.to(Iterable)
 
@@ -67,7 +67,7 @@ case class MapBijection[A, B] private[data] (
     end match
 
   @targetName("appendAll")
-  infix def ++[
+  def ++[
       F[_]: [F[_]] =>> MonadError[F, Bijection.Error],
       T[_]: Traverse
   ](
@@ -75,7 +75,8 @@ case class MapBijection[A, B] private[data] (
   ): F[MapBijection[A, B]] =
     Traverse[T].foldM(iterable, this)(_ + _)
 
-  override inline def ++(other: MapBijection[A, B]): MapBijection[A, B] =
+  @targetName("concat")
+  override def ++(other: MapBijection[A, B]): MapBijection[A, B] =
     MapBijection(
       forwardMap ++ other.forwardMap,
       reverseMap ++ other.reverseMap
@@ -94,8 +95,7 @@ case class MapBijection[A, B] private[data] (
 }
 
 object MapBijection:
-  def empty[A, B]: MapBijection[A, B] =
-    new MapBijection[A, B](Map.empty, Map.empty)
+  def empty[A, B]: MapBijection[A, B] = MapBijection[A, B](Map.empty, Map.empty)
 
   def apply[A, B, F[_]: [F[_]] =>> MonadError[F, Bijection.Error]](
       kvs: (A, B)*
