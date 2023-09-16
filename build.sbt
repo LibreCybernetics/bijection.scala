@@ -73,11 +73,27 @@ val core: CrossProject =
       )
     )
 
+val scalacheck: CrossProject =
+  crossProject(JVMPlatform, NativePlatform, JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("scalacheck"))
+    .dependsOn(core)
+    .settings(sharedSettings)
+    .settings(
+      name := "bijection-scalacheck",
+      libraryDependencies ++= Seq(
+        "org.scalacheck"    %%% "scalacheck"         % Version.scalacheck,
+        "org.scalatest"     %%% "scalatest"          % Version.scalatest          % Test,
+        "org.scalatest"     %%% "scalatest-wordspec" % Version.scalatest          % Test,
+        "org.scalatestplus" %%% "scalacheck-1-17"    % Version.scalatestPlusCheck % Test,
+      )
+    )
+
 val root: CrossProject =
   crossProject(JVMPlatform, NativePlatform, JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("."))
-    .aggregate(core)
+    .aggregate(core, scalacheck)
     .dependsOn(core)
     .enablePlugins(ScalaUnidocPlugin)
     .settings(sharedSettings)
