@@ -5,7 +5,7 @@ import scala.collection.immutable.{Map, Set}
 
 import alleycats.std.iterable.*
 import cats.syntax.monadError.*
-import cats.{MonadError, Traverse}
+import cats.{ApplicativeError, MonadError, Traverse}
 
 sealed case class MapBijection[A, B] private[data] (
     forwardMap: Map[A, B],
@@ -52,21 +52,21 @@ sealed case class MapBijection[A, B] private[data] (
 
   @targetName("append")
   infix def +[
-      F[_]: [F[_]] =>> MonadError[F, Bijection.Error]
+      F[_]: [F[_]] =>> ApplicativeError[F, Bijection.Error]
   ](
       ab: (A, B)
   ): F[MapBijection[A, B]] =
     val (a, b) = ab
-    val me     = MonadError[F, Bijection.Error]
+    val aerr     = ApplicativeError[F, Bijection.Error]
     this.apply(a) -> this.reverse(b) match
       case (Some(bi), None) if b != bi                =>
-        me.raiseError(Bijection.Error.Rebinding[A, B](a -> b, a -> bi))
+        aerr.raiseError(Bijection.Error.Rebinding[A, B](a -> b, a -> bi))
       case (None, Some(ai)) if a != ai                =>
-        me.raiseError(Bijection.Error.Rebinding[A, B](a -> b, ai -> b))
+        aerr.raiseError(Bijection.Error.Rebinding[A, B](a -> b, ai -> b))
       case (Some(bi), Some(ai)) if a != ai && b != bi =>
-        me.raiseError(Bijection.Error.Rebinding[A, B](a -> b, ai -> b, a -> bi))
+        aerr.raiseError(Bijection.Error.Rebinding[A, B](a -> b, ai -> b, a -> bi))
       case (_, _)                                     =>
-        me.pure(new MapBijection[A, B](forwardMap + ab, reverseMap + ab.swap))
+        aerr.pure(new MapBijection[A, B](forwardMap + ab, reverseMap + ab.swap))
     end match
 
   @targetName("appendAll")
