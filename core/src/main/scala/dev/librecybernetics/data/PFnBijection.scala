@@ -2,8 +2,6 @@ package dev.librecybernetics.data
 
 import scala.annotation.targetName
 
-import cats.MonadError
-
 sealed case class PFnBijection[A, B](
     forwardPFn: PartialFunction[A, B],
     reversePFn: PartialFunction[B, A]
