@@ -3,8 +3,6 @@ package dev.librecybernetics.data
 import scala.annotation.targetName
 import scala.util.Try
 
-import cats.MonadError
-
 sealed case class FnBijection[A, B](
     forwardFn: A => B,
     reverseFn: B => A
@@ -27,7 +25,6 @@ sealed case class FnBijection[A, B](
   }
 
   // Combine
-  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   @targetName("concat")
   override def ++(other: FnBijection[A, B]): FnBijection[A, B] =
     FnBijection(
