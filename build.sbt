@@ -112,10 +112,11 @@ val fakeRoot = (project in file("."))
 
 // CI/CD
 
+import JavaSpec.Distribution
+
 ThisBuild / githubWorkflowJavaVersions := Seq(
-  JavaSpec.temurin("11"),
-  JavaSpec.temurin("17"),
-  JavaSpec.temurin("20")
+  JavaSpec(Distribution.Zulu, "17"),
+  JavaSpec(Distribution.Zulu, "21")
 )
 
 ThisBuild / githubWorkflowTargetTags            :=
