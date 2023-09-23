@@ -13,14 +13,14 @@ addSbtPlugin("com.github.sbt" % "sbt-unidoc" % "0.5.0")
 
 // Static Code Analysis
 
-addSbtPlugin("org.wartremover" % "sbt-wartremover" % "3.1.3")
+addSbtPlugin("org.wartremover" % "sbt-wartremover" % "3.1.4")
 
 // Testing
 
-addSbtPlugin("org.scoverage"      % "sbt-scoverage" % "2.0.8")
-addSbtPlugin("pl.project13.scala" % "sbt-jmh"       % "0.4.5")
+addSbtPlugin("org.scoverage"      % "sbt-scoverage" % "2.0.9")
+addSbtPlugin("pl.project13.scala" % "sbt-jmh"       % "0.4.6")
 
 // CI/CD
 
 addSbtPlugin("com.github.sbt" % "sbt-ci-release"     % "1.5.12")
-addSbtPlugin("com.github.sbt" % "sbt-github-actions" % "0.15.0")
+addSbtPlugin("com.github.sbt" % "sbt-github-actions" % "0.16.0")

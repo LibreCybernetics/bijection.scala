@@ -84,5 +84,5 @@ CalVer with Patch: `YYYY.MM.MICRO` (Year, Month, Patch)
 
 - CPU: x86_64 (ARM and RISC-V might work but LibreCybernetics currently has no hardware to support development)
 - OS: Linux (Neither Windows nor MacOS are supported)
-- JDK: OpenJDK actively supported LTS releases and latest version. (Currently: 11, 17, 20)
-- Scala: 3.y LTS releases and latest version /w latest scala-native and scala.js (Currently: 3.3.0)
+- JDK: Latest 2 supported LTS releases and latest version. (Currently: 17, 21)
+- Scala: 3.y LTS releases and latest version /w latest scala-native and scala.js (Currently: 3.3.1)

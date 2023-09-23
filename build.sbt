@@ -85,7 +85,22 @@ val scalacheck: CrossProject =
         "org.scalacheck"    %%% "scalacheck"         % Version.scalacheck,
         "org.scalatest"     %%% "scalatest"          % Version.scalatest          % Test,
         "org.scalatest"     %%% "scalatest-wordspec" % Version.scalatest          % Test,
-        "org.scalatestplus" %%% "scalacheck-1-17"    % Version.scalatestPlusCheck % Test,
+        "org.scalatestplus" %%% "scalacheck-1-17"    % Version.scalatestPlusCheck % Test
+      )
+    )
+
+val scalatest: CrossProject =
+  crossProject(JVMPlatform, NativePlatform, JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("scalatest"))
+    .dependsOn(core)
+    .settings(sharedSettings)
+    .settings(
+      name := "bijection-scalatest",
+      libraryDependencies ++= Seq(
+        "org.scalatest"     %%% "scalatest"          % Version.scalatest,
+        "org.scalatestplus" %%% "scalacheck-1-17"    % Version.scalatestPlusCheck,
+        "org.scalatest"     %%% "scalatest-wordspec" % Version.scalatest % Test
       )
     )
 
@@ -93,7 +108,7 @@ val root: CrossProject =
   crossProject(JVMPlatform, NativePlatform, JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("."))
-    .aggregate(core, scalacheck)
+    .aggregate(core, scalacheck, scalatest)
     .dependsOn(core)
     .enablePlugins(ScalaUnidocPlugin)
     .settings(sharedSettings)
@@ -106,16 +121,18 @@ val root: CrossProject =
 
 val fakeRoot = (project in file("."))
   .settings(
-    publish / skip    := true,
-    sourceDirectory   := file("fake")
-  ).aggregate(root.componentProjects.map(projectToRef)*)
+    publish / skip  := true,
+    sourceDirectory := file("fake")
+  )
+  .aggregate(root.componentProjects.map(projectToRef)*)
 
 // CI/CD
 
+import JavaSpec.Distribution
+
 ThisBuild / githubWorkflowJavaVersions := Seq(
-  JavaSpec.temurin("11"),
-  JavaSpec.temurin("17"),
-  JavaSpec.temurin("20")
+  JavaSpec(Distribution.Zulu, "17"),
+  JavaSpec(Distribution.Zulu, "21")
 )
 
 ThisBuild / githubWorkflowTargetTags            :=
