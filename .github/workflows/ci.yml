@@ -55,7 +55,7 @@ jobs:
         run: sbt '++ ${{ matrix.scala }}' test
 
       - name: Compress target directories
-        run: tar cf targets.tar target scalacheck/.native/target .js/target core/.native/target core/.js/target core/.jvm/target .jvm/target .native/target scalatest/.native/target scalacheck/.jvm/target scalatest/.js/target scalatest/.jvm/target scalacheck/.js/target project/target
+        run: tar cf targets.tar target core/target/native-3 fake/target target/jvm-3 core/target/jvm-3 target/native-3 scalatest/target/jvm-3 target/js-3 scalacheck/target/jvm-3 scalacheck/target/native-3 scalacheck/target/js-3 scalatest/target/native-3 scalatest/target/js-3 core/target/js-3 project/target
 
       - name: Upload target directories
         uses: actions/upload-artifact@v3
