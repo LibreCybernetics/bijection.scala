@@ -1,6 +1,4 @@
 import sbt.Keys.publishTo
-import sbt.Project.projectToRef
-import sbtcrossproject.CrossProject
 
 // Globals
 
@@ -57,10 +55,11 @@ val sharedSettings = Seq(
 
 ThisBuild / wartremoverErrors ++= Warts.unsafe
 
-val core: CrossProject =
-  crossProject(JVMPlatform, NativePlatform, JSPlatform)
-    .crossType(CrossType.Pure)
-    .in(file("core"))
+val core =
+  (projectMatrix in file("core"))
+    .jsPlatform(scalaVersions = Seq(Version.scala))
+    .jvmPlatform(scalaVersions = Seq(Version.scala))
+    .nativePlatform(scalaVersions = Seq(Version.scala))
     .settings(sharedSettings)
     .settings(
       name := "bijection-core",
@@ -73,10 +72,11 @@ val core: CrossProject =
       )
     )
 
-val scalacheck: CrossProject =
-  crossProject(JVMPlatform, NativePlatform, JSPlatform)
-    .crossType(CrossType.Pure)
-    .in(file("scalacheck"))
+val scalacheck =
+  (projectMatrix in file("scalacheck"))
+    .jsPlatform(scalaVersions = Seq(Version.scala))
+    .jvmPlatform(scalaVersions = Seq(Version.scala))
+    .nativePlatform(scalaVersions = Seq(Version.scala))
     .dependsOn(core)
     .settings(sharedSettings)
     .settings(
@@ -89,10 +89,11 @@ val scalacheck: CrossProject =
       )
     )
 
-val scalatest: CrossProject =
-  crossProject(JVMPlatform, NativePlatform, JSPlatform)
-    .crossType(CrossType.Pure)
-    .in(file("scalatest"))
+val scalatest =
+  (projectMatrix in file("scalatest"))
+    .jsPlatform(scalaVersions = Seq(Version.scala))
+    .jvmPlatform(scalaVersions = Seq(Version.scala))
+    .nativePlatform(scalaVersions = Seq(Version.scala))
     .dependsOn(core)
     .settings(sharedSettings)
     .settings(
@@ -104,31 +105,30 @@ val scalatest: CrossProject =
       )
     )
 
-val root: CrossProject =
-  crossProject(JVMPlatform, NativePlatform, JSPlatform)
-    .crossType(CrossType.Pure)
-    .in(file("."))
+val rootMatrix =
+  (projectMatrix in file("."))
+    .jsPlatform(scalaVersions = Seq(Version.scala))
+    .jvmPlatform(scalaVersions = Seq(Version.scala))
+    .nativePlatform(scalaVersions = Seq(Version.scala))
     .aggregate(core, scalacheck, scalatest)
     .dependsOn(core)
-    .enablePlugins(ScalaUnidocPlugin)
     .settings(sharedSettings)
+    .settings(name := "bijection")
+    .enablePlugins(ScalaUnidocPlugin)
     .settings(
-      name                                       := "bijection",
       ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(thisProject.value.aggregate*)
     )
 
 // To avoid publishing the default root package / `bijection-scala`
 
-val fakeRoot = (project in file("."))
-  .settings(
-    publish / skip  := true,
-    sourceDirectory := file("fake")
-  )
-  .aggregate(root.componentProjects.map(projectToRef)*)
+val root = (project in file("fake"))
+  .aggregate(rootMatrix.projectRefs*)
+  .settings(sharedSettings)
+  .settings(publish / skip := true)
 
 // CI/CD
 
-import JavaSpec.Distribution
+import sbtghactions.GenerativePlugin.autoImport.JavaSpec.Distribution
 
 ThisBuild / githubWorkflowJavaVersions := Seq(
   JavaSpec(Distribution.Zulu, "17"),
