@@ -17,7 +17,7 @@ addSbtPlugin("org.wartremover" % "sbt-wartremover" % "3.1.6")
 // Testing
 
 addSbtPlugin("org.scoverage"      % "sbt-scoverage" % "2.0.9")
-addSbtPlugin("pl.project13.scala" % "sbt-jmh"       % "0.4.6")
+addSbtPlugin("pl.project13.scala" % "sbt-jmh"       % "0.4.7")
 
 // CI/CD
 
