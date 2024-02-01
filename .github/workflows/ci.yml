@@ -34,7 +34,7 @@ jobs:
 
       - name: Setup Java (zulu@17)
         if: matrix.java == 'zulu@17'
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: 17
@@ -42,7 +42,7 @@ jobs:
 
       - name: Setup Java (zulu@21)
         if: matrix.java == 'zulu@21'
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: 21
@@ -58,7 +58,7 @@ jobs:
         run: tar cf targets.tar target core/target/native-3 fake/target target/jvm-3 core/target/jvm-3 target/native-3 scalatest/target/jvm-3 target/js-3 scalacheck/target/jvm-3 scalacheck/target/native-3 scalacheck/target/js-3 scalatest/target/native-3 scalatest/target/js-3 core/target/js-3 project/target
 
       - name: Upload target directories
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: target-${{ matrix.os }}-${{ matrix.scala }}-${{ matrix.java }}
           path: targets.tar
@@ -81,7 +81,7 @@ jobs:
 
       - name: Setup Java (zulu@17)
         if: matrix.java == 'zulu@17'
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: 17
@@ -89,14 +89,14 @@ jobs:
 
       - name: Setup Java (zulu@21)
         if: matrix.java == 'zulu@21'
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: 21
           cache: sbt
 
       - name: Download target directories (3.3.1)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: target-${{ matrix.os }}-3.3.1-${{ matrix.java }}
 
