@@ -12,7 +12,7 @@ addSbtPlugin("com.github.sbt" % "sbt-unidoc" % "0.5.0")
 
 // Static Code Analysis
 
-addSbtPlugin("org.wartremover" % "sbt-wartremover" % "3.1.5")
+addSbtPlugin("org.wartremover" % "sbt-wartremover" % "3.1.6")
 
 // Testing
 
