@@ -12,7 +12,7 @@
 
           overlays = [ devshell.overlays.default ];
         };
-        jdk = pkgs.jdk11;
+        jdk = pkgs.jdk17;
       in rec {
         config = {
           env = [{
